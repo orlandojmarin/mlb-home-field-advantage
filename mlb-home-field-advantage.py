@@ -1,9 +1,13 @@
+# FIGURE 1: DOUBLE BAR GRAPHS
+### add a subheader to title the first figure
+### move the sentence that's currentlyl above figure 1 below it so it serves as the "caption"
+### move legend to top left corner for the PITCHING view
+ 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import matplotlib.pyplot as plt
  
-# Load the data
+# Load data
 url = "https://raw.githubusercontent.com/orlandojmarin/mlb-home-field-advantage/refs/heads/main/mlb_data.csv"
 df = pd.read_csv(url)
  
@@ -12,14 +16,13 @@ st.title("MLB Home Field Advantage Analysis ⚾")
  
 st.markdown("---")
  
-st.markdown("This visualization compares **MLB league-wide home vs. away performance**. Use the dropdown above to switch between batting and pitching metrics.")
+st.subheader("League-Wide Batting or Pitching Comparison (Home vs Away)")
  
 # Dropdown to select Batting or Pitching
 option = st.selectbox(
     "Select Performance Type:",
     ("Batting", "Pitching")
 )
-
  
 # Calculate league-wide totals and create figure
 if option == "Batting":
@@ -103,13 +106,23 @@ elif option == "Pitching":
     ax.set_title("MLB League-Wide Pitching Performance (Home vs Away)")
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
-    ax.legend()
+    ax.legend(loc="upper left")
  
     st.pyplot(fig)
-
-# Load data
-url = "https://raw.githubusercontent.com/orlandojmarin/mlb-home-field-advantage/refs/heads/main/mlb_data.csv"
-df = pd.read_csv(url)
+ 
+st.caption("This visualization compares **MLB league-wide home vs. away performance**. Use the dropdown above to switch between batting and pitching metrics.")
+ 
+st.markdown("---")
+ 
+###############################################
+    
+# FIGURE 2: SCATTER PLOTS
+    
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+ 
+st.subheader("Correlation between Elevation or Attendance on Home Field Advantage")
  
 # Calculate home and away win percentages
 df["home_win_pct"] = df["home_wins"] / (df["home_wins"] + df["home_losses"])
@@ -124,14 +137,6 @@ for score in df["home_advantage_score"]:
     else:
         colors.append("red")
 df["advantage_color"] = colors
- 
-# App title and description
-st.title("MLB Home Field Advantage Analysis ⚾")
- 
-st.markdown("""
-This visualization explores whether **elevation** or **attendance** affects a team's **home field advantage**.
-Hover over a point to see the team name and values.
-""")
  
 # Dropdown: Elevation or Attendance
 factor = st.selectbox("Select a Factor:", ("Elevation", "Attendance"))
@@ -180,8 +185,17 @@ fig.update_layout(
 # Show the plot
 st.plotly_chart(fig, use_container_width=True)
  
-# Optional caption to explain color
+# Caption to explain color
 st.caption("Green = positive home field advantage, Red = neutral or negative")
+ 
+st.caption("""
+This visualization explores whether **elevation** or **attendance** affects a team's **home field advantage**.
+Hover over a point to see the team name and values.
+""")
+ 
+st.markdown("---")
+ 
+###############################################
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
