@@ -6,6 +6,9 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
+import folium
+from streamlit_folium import st_folium
  
 # Load data
 url = "https://raw.githubusercontent.com/orlandojmarin/mlb-home-field-advantage/refs/heads/main/mlb_data.csv"
@@ -117,10 +120,6 @@ st.markdown("---")
 ###############################################
     
 # FIGURE 2: SCATTER PLOTS
-    
-import streamlit as st
-import pandas as pd
-import plotly.express as px
  
 st.subheader("Correlation between Elevation or Attendance on Home Field Advantage")
  
@@ -201,10 +200,59 @@ st.markdown("---")
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# MAP VISUALIZATION
+# BUBBLE CHART
 
-import folium
-from streamlit_folium import st_folium
+# Calculate home run difference
+df["hr_diff"] = df["home_runs_home"] - df["home_runs_away"]
+
+# Create interactive bubble chart
+fig = px.scatter(
+    df,
+    x="max_wall_height_ft",
+    y="hr_diff",
+    size="avg_attendance_home",
+    hover_name="team_name",
+    color="hr_diff",
+    color_continuous_scale="RdYlGn",
+    labels={
+        "max_wall_height_ft": "Max Wall Height (ft)",
+        "hr_diff": "Home Run Difference (Home - Away)",
+        "avg_attendance_home": "Avg Home Attendance"
+    },
+    title="🏟️ Max Wall Height vs Home Run Difference"
+)
+
+# Customize hover template
+fig.update_traces(
+    hovertemplate="<b>%{hovertext}</b><br>" +
+                  "Max Wall Height: %{x} ft<br>" +
+                  "HR Difference: %{y}<br>" +
+                  "Avg Attendance: %{marker.size:,}<extra></extra>"
+)
+
+# Center and scale layout
+fig.update_layout(
+    title_x=0.5,
+    height=600,
+    xaxis=dict(tickformat=".0f"),
+    yaxis=dict(title="Home Runs (Home - Away)"),
+    coloraxis_colorbar=dict(title="HR Difference"),
+    showlegend=False
+)
+
+# Display in Streamlit
+st.subheader("🏟️ Max Wall Height vs Home Run Difference")
+st.markdown("**Each bubble represents a team. Size = Avg Home Attendance. Hover to view details.**")
+st.plotly_chart(fig, use_container_width=True)
+st.caption("Each bubble represents an MLB team. The x-axis shows the stadium's maximum wall height, while the y-axis shows the difference in home runs hit at home versus away. Bubble size reflects average home attendance. Hover to view team details.")
+
+# add a horizontal line to divide the section
+st.markdown("---") 
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# MAP VISUALIZATION
 
 # Calculate win percentages with safer denominator handling
 df["home_win_pct"] = df["home_wins"] / df[["home_wins", "home_losses"]].sum(axis=1)
@@ -252,15 +300,15 @@ for _, row in df.iterrows():
         popup=popup
     ).add_to(m)
 
-# Streamlit section for displaying the map
-st.subheader("📍 MLB Stadium Map: Home Field Advantage")
-st.markdown("**Bubble color = Home Advantage Score (green = positive), Size = Avg Home Attendance**")
-st_folium(m, width=700, height=500)
-st.caption("Each bubble represents an MLB stadium. Green bubbles indicate a positive home field advantage, while red bubbles indicate neutral or negative advantage. Bubble size reflects average home game attendance.")
+# ✅ Use a container to isolate the layout and reduce space issues
+with st.container():
+    st.subheader("📍 MLB Stadium Map: Home Field Advantage")
+    st.markdown("**Bubble color = Home Advantage Score (green = positive), Size = Avg Home Attendance**")
+    st.caption("Each bubble represents an MLB stadium. Green bubbles indicate a positive home field advantage, while red bubbles indicate neutral or negative advantage. Bubble size reflects average home game attendance.")
+    st_folium(m, width=700, height=400) 
 
-# add a horizontal line to divide the section
-st.markdown("---")
-
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 
