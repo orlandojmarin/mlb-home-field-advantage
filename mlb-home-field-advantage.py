@@ -19,6 +19,7 @@ option = st.selectbox(
     "Select Performance Type:",
     ("Batting", "Pitching")
 )
+
  
 # Calculate league-wide totals and create figure
 if option == "Batting":
