@@ -1,14 +1,14 @@
-# FIGURE 1: DOUBLE BAR GRAPHS
-### add a subheader to title the first figure
-### move the sentence that's currentlyl above figure 1 below it so it serves as the "caption"
-### move legend to top left corner for the PITCHING view
- 
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import folium
 from streamlit_folium import st_folium
+
+# FIGURE 1: DOUBLE BAR GRAPHS
+### add a subheader to title the first figure
+### move the sentence that's currentlyl above figure 1 below it so it serves as the "caption"
+### move legend to top left corner for the PITCHING view
  
 # Load data
 url = "https://raw.githubusercontent.com/orlandojmarin/mlb-home-field-advantage/refs/heads/main/mlb_data.csv"
@@ -200,7 +200,7 @@ st.markdown("---")
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# BUBBLE CHART
+# FIGURE 3: BUBBLE CHART
 
 # Calculate home run difference
 df["hr_diff"] = df["home_runs_home"] - df["home_runs_away"]
@@ -252,7 +252,7 @@ st.markdown("---")
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# MAP VISUALIZATION
+# FIGURE 4: MAP
 
 # Calculate win percentages with safer denominator handling
 df["home_win_pct"] = df["home_wins"] / df[["home_wins", "home_losses"]].sum(axis=1)
@@ -305,12 +305,70 @@ with st.container():
     st.subheader("📍 MLB Stadium Map: Home Field Advantage")
     st.markdown("**Bubble color = Home Advantage Score (green = positive), Size = Avg Home Attendance**")
     st.caption("Each bubble represents an MLB stadium. Green bubbles indicate a positive home field advantage, while red bubbles indicate neutral or negative advantage. Bubble size reflects average home game attendance.")
-    st_folium(m, width=700, height=400) 
+    st_folium(m, height=400, width=700) 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
+# FIGURE 5: BOX PLOT
+ 
+st.subheader("Distribution of Runs, Home Runs, Strikeouts, or Walks (Home vs Away)")
+ 
+# Dropdown for metric selection
+metric = st.selectbox(
+    "Select a Performance Metric:",
+    ("Runs", "Home Runs", "Strikeouts", "Walks")
+)
+ 
+# Map user-friendly labels to actual column names in the dataset
+metric_columns = {
+    "Runs": ("runs_scored_home", "runs_scored_away"),
+    "Home Runs": ("home_runs_home", "home_runs_away"),
+    "Strikeouts": ("strikeouts_home", "strikeouts_away"),
+    "Walks": ("walks_home", "walks_away")
+}
+ 
+home_col, away_col = metric_columns[metric]
+ 
+# Prepare the data in long format for box plot
+data = pd.DataFrame({
+    "Performance": df[home_col].tolist() + df[away_col].tolist(),
+    "Location": ["Home"] * len(df) + ["Away"] * len(df)
+})
+ 
+# Create box plot
+fig = px.box(
+    data,
+    x="Location",
+    y="Performance",
+    color="Location",
+    title="Home vs Away Performance Distribution",
+    color_discrete_map={"Home": "green", "Away": "red"},
+)
+ 
+# Clean up layout
+fig.update_layout(
+    plot_bgcolor='white',
+    paper_bgcolor='white',
+    font=dict(color='black', size=14),  # makes all text black
+    title_font=dict(color='black'),
+    title_x=0.5,
+    xaxis_title="Location",
+    yaxis_title=metric,
+    showlegend=False,
+    xaxis=dict(
+        title_font=dict(color='black'),
+        tickfont=dict(color='black')
+    ),
+    yaxis=dict(
+        title_font=dict(color='black'),
+        tickfont=dict(color='black')
+    )
+)
+ 
+ 
+# Display chart
+st.plotly_chart(fig, use_container_width=True)
 
 
 
