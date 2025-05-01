@@ -261,6 +261,59 @@ st.caption("Each bubble represents an MLB stadium. Green bubbles indicate a posi
 # add a horizontal line to divide the section
 st.markdown("---")
 
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# BUBBLE CHART
+
+import plotly.express as px
+import streamlit as st
+
+# Calculate home run difference
+df["hr_diff"] = df["home_runs_home"] - df["home_runs_away"]
+
+# Create interactive bubble chart
+fig = px.scatter(
+    df,
+    x="max_wall_height_ft",
+    y="hr_diff",
+    size="avg_attendance_home",
+    hover_name="team_name",
+    color="hr_diff",
+    color_continuous_scale="RdYlGn",
+    labels={
+        "max_wall_height_ft": "Max Wall Height (ft)",
+        "hr_diff": "Home Run Difference (Home - Away)",
+        "avg_attendance_home": "Avg Home Attendance"
+    },
+    title="🏟️ Max Wall Height vs Home Run Difference"
+)
+
+# Customize hover template
+fig.update_traces(
+    hovertemplate="<b>%{hovertext}</b><br>" +
+                  "Max Wall Height: %{x} ft<br>" +
+                  "HR Difference: %{y}<br>" +
+                  "Avg Attendance: %{marker.size:,}<extra></extra>"
+)
+
+# Center and scale layout
+fig.update_layout(
+    title_x=0.5,
+    height=600,
+    xaxis=dict(tickformat=".0f"),
+    yaxis=dict(title="Home Runs (Home - Away)"),
+    coloraxis_colorbar=dict(title="HR Difference"),
+    showlegend=False
+)
+
+# Display in Streamlit
+st.subheader("🏟️ Max Wall Height vs Home Run Difference")
+st.markdown("**Each bubble represents a team. Size = Avg Home Attendance. Hover to view details.**")
+st.plotly_chart(fig, use_container_width=True)
+
+# add a horizontal line to divide the section
+st.markdown("---")
 
 
 
