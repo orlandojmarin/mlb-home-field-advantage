@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
  
-# Load your data
+# Load the data
 url = "https://raw.githubusercontent.com/orlandojmarin/mlb-home-field-advantage/refs/heads/main/mlb_data.csv"
 df = pd.read_csv(url)
  
@@ -182,4 +182,75 @@ st.plotly_chart(fig, use_container_width=True)
  
 # Optional caption to explain color
 st.caption("Green = positive home field advantage, Red = neutral or negative")
+
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# MAP VISUALIZATION
+
+import folium
+from streamlit_folium import st_folium
+
+# Calculate win percentages with safer denominator handling
+df["home_win_pct"] = df["home_wins"] / df[["home_wins", "home_losses"]].sum(axis=1)
+df["away_win_pct"] = df["away_wins"] / df[["away_wins", "away_losses"]].sum(axis=1)
+df["home_advantage_score"] = df["home_win_pct"] - df["away_win_pct"]
+
+# Normalize attendance for bubble scaling
+min_att = df["avg_attendance_home"].min()
+max_att = df["avg_attendance_home"].max()
+
+# Initialize a colorful Folium map (switch from CartoDB to OpenStreetMap)
+m = folium.Map(location=[39.8283, -98.5795], zoom_start=4, tiles="OpenStreetMap")
+
+# Add a circle marker for each stadium
+for _, row in df.iterrows():
+    lat = row["ballpark_lat"]
+    lon = row["ballpark_long"]
+    team = row["team_name"]
+    stadium = row["ballpark"]
+    score = row["home_advantage_score"]
+    attendance = row["avg_attendance_home"]
+
+    # Choose color based on home field advantage
+    color = "green" if score > 0 else "red"
+
+    # Normalize and cap bubble radius
+    normalized = (attendance - min_att) / (max_att - min_att)
+    radius = max(5, min(20, 5 + 15 * normalized))  # Clamp between 5 and 20
+
+    # Popup info
+    popup = folium.Popup(
+        f"<b>{team}</b><br>"
+        f"Stadium: {stadium}<br>"
+        f"Home Advantage Score: {score:.3f}<br>"
+        f"Avg Attendance: {attendance:,.0f}",
+        max_width=300
+    )
+
+    folium.CircleMarker(
+        location=[lat, lon],
+        radius=radius,
+        color=color,
+        fill=True,
+        fill_opacity=0.7,
+        popup=popup
+    ).add_to(m)
+
+# Streamlit section for displaying the map
+st.subheader("📍 MLB Stadium Map: Home Field Advantage")
+st.markdown("**Bubble color = Home Advantage Score (green = positive), Size = Avg Home Attendance**")
+st_folium(m, width=700, height=500)
+st.caption("Each bubble represents an MLB stadium. Green bubbles indicate a positive home field advantage, while red bubbles indicate neutral or negative advantage. Bubble size reflects average home game attendance.")
+
+# add a horizontal line to divide the section
+st.markdown("---")
+
+
+
+
+
+
+
 
