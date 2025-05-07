@@ -1,8 +1,3 @@
-# FIGURE 1: DOUBLE BAR GRAPHS
-### add a subheader to title the first figure
-### move the sentence that's currentlyl above figure 1 below it so it serves as the "caption"
-### move legend to top left corner for the PITCHING view
- 
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,12 +13,17 @@ df = pd.read_csv(url)
 st.title("MLB Home Field Advantage Analysis ⚾")
  
 st.markdown("---")
+
+# FIGURE 1: DOUBLE BAR GRAPHS
+### add a subheader to title the first figure
+### move the sentence that's currently above figure 1 below it so it serves as the "caption"
+### move legend to top left corner for the PITCHING view
  
-st.subheader("League-Wide Batting or Pitching Comparison (Home vs Away)")
+st.subheader("MLB Teams Bat and Pitch Better at Home")
  
 # Dropdown to select Batting or Pitching
 option = st.selectbox(
-    "Select Performance Type:",
+    "Use the dropdown below to switch between batting and pitching metrics:",
     ("Batting", "Pitching")
 )
  
@@ -33,25 +33,25 @@ if option == "Batting":
     total_runs_away = df["runs_scored_away"].sum()
     total_hr_home = df["home_runs_home"].sum()
     total_hr_away = df["home_runs_away"].sum()
- 
+
     # Set up categories and totals
     categories = ["Runs Scored", "Home Runs"]
     home_totals = [total_runs_home, total_hr_home]
     away_totals = [total_runs_away, total_hr_away]
- 
+
     # Set x positions for each category
     x = range(len(categories))  # [0, 1]
     width = 0.35  # width of each bar
- 
+
     # Calculate x positions for the Home and Away bars
     x_home = [pos - width/2 for pos in x]  # Home bars shifted left
     x_away = [pos + width/2 for pos in x]  # Away bars shifted right
- 
-    # Plot the bars
+
+    # Plot the bars with custom colors
     fig, ax = plt.subplots(figsize=(10, 8))
-    bars_home = ax.bar(x_home, home_totals, width, label="Home")
-    bars_away = ax.bar(x_away, away_totals, width, label="Away")
- 
+    bars_home = ax.bar(x_home, home_totals, width, label="Home", color="#002D72", edgecolor="black")
+    bars_away = ax.bar(x_away, away_totals, width, label="Away", color="#d9d9d9", edgecolor="black")
+
     # Add value labels above each bar
     for bar in bars_home + bars_away:
         height = bar.get_height()
@@ -76,25 +76,25 @@ elif option == "Pitching":
     total_walks_away = df["walks_away"].sum()
     total_strikeouts_home = df["strikeouts_home"].sum()
     total_strikeouts_away = df["strikeouts_away"].sum()
- 
-    # Set up categories and totals
-    categories = ["Walks Allowed", "Strikeouts"]
-    home_totals = [total_walks_home, total_strikeouts_home]
-    away_totals = [total_walks_away, total_strikeouts_away]
- 
+
+    # Set up categories and totals (strikeouts first)
+    categories = ["Strikeouts", "Walks"]
+    home_totals = [total_strikeouts_home, total_walks_home]
+    away_totals = [total_strikeouts_away, total_walks_away]
+
     # Set x positions for each category
     x = range(len(categories))  # [0, 1]
     width = 0.35  # width of each bar
- 
+
     # Calculate x positions for the Home and Away bars
     x_home = [pos - width/2 for pos in x]  # Home bars shifted left
     x_away = [pos + width/2 for pos in x]  # Away bars shifted right
- 
-    # Plot the bars
-    fig, ax = plt.subplots(figsize=(10, 8))  # Adjusted height
-    bars_home = ax.bar(x_home, home_totals, width, label="Home")
-    bars_away = ax.bar(x_away, away_totals, width, label="Away")
- 
+
+    # Plot the bars with custom colors
+    fig, ax = plt.subplots(figsize=(10, 8))
+    bars_home = ax.bar(x_home, home_totals, width, label="Home", color="#002D72", edgecolor="black")
+    bars_away = ax.bar(x_away, away_totals, width, label="Away", color="#d9d9d9", edgecolor="black")
+
     # Add value labels above each bar
     for bar in bars_home + bars_away:
         height = bar.get_height()
@@ -109,17 +109,105 @@ elif option == "Pitching":
     ax.set_title("MLB League-Wide Pitching Performance (Home vs Away)")
     ax.set_xticks(x)
     ax.set_xticklabels(categories)
-    ax.legend(loc="upper left")
+    ax.legend()
  
     st.pyplot(fig)
- 
-st.caption("This visualization compares **MLB league-wide home vs. away performance**. Use the dropdown above to switch between batting and pitching metrics.")
+
+st.markdown("""
+This visualization compares league-wide batting and pitching performance at home vs. away.  
+
+Teams scored 1.46% more runs at home and hit 1.04% more home runs at home, suggesting a modest offensive boost at home ballparks.  
+
+On the pitching side, teams recorded 8.63% more strikeouts at home, indicating stronger pitching effectiveness on home turf. However, teams also issued 2.83% fewer walks at home, which is desirable, as fewer walks allowed reduces opponent scoring chances.  
+
+Overall, these differences reflect a consistent home field advantage across both batting and pitching metrics.
+""")
  
 st.markdown("---")
  
 ###############################################
+
+# FIGURE 2: BOX PLOTS
+
+st.subheader("Distribution of Runs, Home Runs, Strikeouts, or Walks (Home vs Away)")
+
+# Dropdown for metric selection
+metric = st.selectbox(
+    "Use the dropdown below to switch between runs, home runs, strikeouts, and walks:",
+    ("Runs", "Home Runs", "Strikeouts", "Walks")
+)
+
+# Map user-friendly labels to actual column names in the dataset
+metric_columns = {
+    "Runs": ("runs_scored_home", "runs_scored_away"),
+    "Home Runs": ("home_runs_home", "home_runs_away"),
+    "Strikeouts": ("strikeouts_home", "strikeouts_away"),
+    "Walks": ("walks_home", "walks_away")
+}
+
+home_col, away_col = metric_columns[metric]
+
+# Prepare the data in long format for box plot
+data = pd.DataFrame({
+    "Performance": df[home_col].tolist() + df[away_col].tolist(),
+    "Location": ["Home"] * len(df) + ["Away"] * len(df)
+})
+
+# Create box plot with custom colors
+fig = px.box(
+    data,
+    x="Location",
+    y="Performance",
+    color="Location",
+    color_discrete_map={
+        "Home": "#002D72",    # Navy
+        "Away": "#d9d9d9"     # Light gray
+    }
+)
+
+# Make the Away box plot fully opaque and darken its outline
+for trace in fig.data:
+    if trace.name == "Away":
+        trace.fillcolor = "rgba(217,217,217,1)"  # solid light gray
+        trace.line.color = "#4D4D4D"             # dark gray border
+
+# Update layout with proper centering, padding, and visual spacing
+fig.update_layout(
+    title=dict(
+        text=f"{metric} Distribution: Home vs Away",
+        x=0.5,
+        xanchor="center",  # ✅ truly centers the title
+        font=dict(size=20, color='black')
+    ),
+    plot_bgcolor='white',
+    paper_bgcolor='#f5f5f5',  # light gray around plot to give border effect
+    margin=dict(l=40, r=40, t=60, b=60),  # ✅ clean spacing on all sides
+    font=dict(color='black', size=14),
+    showlegend=False,
+    xaxis_title="Location",
+    yaxis_title=metric,
+    xaxis=dict(
+        title_font=dict(color='black', size=16),
+        tickfont=dict(color='black', size=14)
+    ),
+    yaxis=dict(
+        title_font=dict(color='black', size=16),
+        tickfont=dict(color='black', size=14)
+    )
+)
+
+# Show the plot
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown("---")
+
+
+
+
+
+###############################################
     
-# FIGURE 2: SCATTER PLOTS
+# FIGURE 3: SCATTER PLOTS
  
 st.subheader("Correlation between Elevation or Attendance on Home Field Advantage")
  
