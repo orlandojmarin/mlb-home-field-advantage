@@ -19,7 +19,7 @@ st.markdown("---")
 ### move the sentence that's currently above figure 1 below it so it serves as the "caption"
 ### move legend to top left corner for the PITCHING view
  
-st.subheader("MLB Teams Bat and Pitch Better at Home")
+st.subheader("MLB Totals Reveal Stronger Pitching and Slight Offensive Boost at Home")
  
 # Dropdown to select Batting or Pitching
 option = st.selectbox(
@@ -129,7 +129,7 @@ st.markdown("---")
 
 # FIGURE 2: BOX PLOTS
 
-st.subheader("Distribution of Runs, Home Runs, Strikeouts, or Walks (Home vs Away)")
+st.subheader("Pitching Fuels MLB Home Field Advantage More Than Hitting")
 
 # Dropdown for metric selection
 metric = st.selectbox(
@@ -176,12 +176,12 @@ fig.update_layout(
     title=dict(
         text=f"{metric} Distribution: Home vs Away",
         x=0.5,
-        xanchor="center",  # ✅ truly centers the title
+        xanchor="center",  # truly centers the title
         font=dict(size=20, color='black')
     ),
     plot_bgcolor='white',
     paper_bgcolor='#f5f5f5',  # light gray around plot to give border effect
-    margin=dict(l=40, r=40, t=60, b=60),  # ✅ clean spacing on all sides
+    margin=dict(l=40, r=40, t=60, b=60),  # clean spacing on all sides
     font=dict(color='black', size=14),
     showlegend=False,
     xaxis_title="Location",
@@ -199,11 +199,17 @@ fig.update_layout(
 # Show the plot
 st.plotly_chart(fig, use_container_width=True)
 
+st.markdown("""
+This visualization shows the distribution of team-level performance metrics at home vs. away using box plots.
+
+Median values show that teams scored slightly fewer runs at home (343) than away (352), and hit a nearly identical number of home runs at home (86) and away (87.5). This slight dip in home offense may be partially explained by the fact that home teams often do not bat in the 9th inning if they are already winning.
+
+On the pitching side, teams recorded more strikeouts at home (719) than away (658.5), and issued slightly fewer walks at home (241.5) than away (255). This is especially notable since home teams may pitch fewer total innings, yet still outperform away teams in key pitching metrics.
+
+These patterns suggest that home field advantage in baseball is most evident on the pitching side, where home teams demonstrate more effective control and dominance on the mound, even with fewer opportunities.
+""")
+
 st.markdown("---")
-
-
-
-
 
 ###############################################
     
