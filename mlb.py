@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
+import plotly.graph_objects as go
 import folium
 from streamlit_folium import st_folium
  
@@ -14,7 +15,109 @@ st.title("MLB Home Field Advantage Analysis ⚾")
  
 st.markdown("---")
 
-# FIGURE 1: DOUBLE BAR GRAPHS
+###############################################
+
+# FIGURE 1: HOME VS AWAY WIN PERCENTAGE SCATTER PLOT
+
+st.subheader("Win Rates Show That Home Field Matters in Major League Baseball")
+
+st.markdown("""
+This scatter plot shows each MLB team's home win percentage versus away win percentage.  
+Each point represents a team, labeled by its abbreviation.
+
+- Above the diagonal line = better performance at home  
+- Below the line = better performance on the road  
+- Color intensity reflects the size of the team's home field advantage score  
+- Hover over a point to view the team's name, win percentages, and home field advantage score
+""")
+
+# Calculate win percentages
+df["home_win_pct"] = df["home_wins"] / (df["home_wins"] + df["home_losses"])
+df["away_win_pct"] = df["away_wins"] / (df["away_wins"] + df["away_losses"])
+df["home_field_advantage"] = df["home_win_pct"] - df["away_win_pct"]
+
+# Create the scatter plot
+fig = go.Figure()
+
+# Add team points
+fig.add_trace(go.Scatter(
+    x=df["away_win_pct"],
+    y=df["home_win_pct"],
+    mode="markers+text",
+    text=df["team_abv"],  # Still shows abbreviations on the plot
+    hovertext=df["team_name"],  # Full name on hover
+    textposition="bottom center",
+    textfont=dict(size=14, color="black"),
+    cliponaxis=False,
+    marker=dict(
+        size=10,
+        color=df["home_field_advantage"],
+        colorscale="Blues",
+        colorbar=dict(title="Home<br>Advantage"),
+        line=dict(width=1, color="black")
+    ),
+    hovertemplate=(
+    "<b>%{hovertext}</b><br>" +
+    "Home Win %: %{y:.3f}<br>" +
+    "Away Win %: %{x:.3f}<br>" +
+    "Home Field Advantage %: %{marker.color:.3f}<extra></extra>"
+    )
+))
+
+# Add diagonal reference line (y = x)
+fig.add_trace(go.Scatter(
+    x=[0, 1],
+    y=[0, 1],
+    mode="lines",
+    line=dict(dash="dash", color="gray"),
+    showlegend=False
+))
+
+# Centered and styled layout
+fig.update_layout(
+    title=dict(
+        text="Home vs. Away Win Percentage by Team",
+        x=0.5,
+        xanchor="center",
+        font=dict(size=22, color="black")
+    ),
+    height=650,
+    plot_bgcolor="white",
+    paper_bgcolor="#f5f5f5",
+    font=dict(color="black", size=14),
+    margin=dict(l=50, r=50, t=70, b=70),
+    showlegend=False,
+    xaxis=dict(
+        title="Away Win %",
+        range=[0.3, 0.7],
+        title_font=dict(size=18, color="black"),
+        tickfont=dict(size=14, color="black")
+    ),
+    yaxis=dict(
+        title="Home Win %",
+        range=[0.3, 0.7],
+        title_font=dict(size=18, color="black"),
+        tickfont=dict(size=14, color="black")
+    )
+)
+
+# Display in Streamlit
+st.plotly_chart(fig, use_container_width=True)
+
+# Caption
+st.markdown("""
+This visualization compares each MLB team's home and away win percentages using a scatter plot.
+
+Out of 30 teams, 22 (73%) performed better at home (above the diagonal line), 3 (10%) performed the same (on the line), and only 5 (17%) performed better on the road (below the line).
+
+These results provide strong evidence of a league-wide home field advantage, with nearly three-quarters of MLB teams winning more frequently on their home turf than on the road.
+""")
+
+st.markdown("---")
+
+###############################################
+
+# FIGURE 2: DOUBLE BAR GRAPHS
 ### add a subheader to title the first figure
 ### move the sentence that's currently above figure 1 below it so it serves as the "caption"
 ### move legend to top left corner for the PITCHING view
@@ -127,7 +230,7 @@ st.markdown("---")
  
 ###############################################
 
-# FIGURE 2: BOX PLOTS
+# FIGURE 3: BOX PLOTS
 
 st.subheader("Pitching Fuels MLB Home Field Advantage More Than Hitting")
 
@@ -213,7 +316,7 @@ st.markdown("---")
 
 ###############################################
     
-# FIGURE 3: SCATTER PLOTS
+# FIGURE 4: SCATTER PLOTS
  
 st.subheader("Correlation between Elevation or Attendance on Home Field Advantage")
  
@@ -294,7 +397,7 @@ st.markdown("---")
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# BUBBLE CHART
+# FIGURE 5: BUBBLE CHART
 
 # Calculate home run difference
 df["hr_diff"] = df["home_runs_home"] - df["home_runs_away"]
@@ -346,7 +449,7 @@ st.markdown("---")
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# MAP VISUALIZATION
+# FIGURE 6: MAP VISUALIZATION
 
 # Calculate win percentages with safer denominator handling
 df["home_win_pct"] = df["home_wins"] / df[["home_wins", "home_losses"]].sum(axis=1)
@@ -403,10 +506,3 @@ with st.container():
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-
-
-
-
-
