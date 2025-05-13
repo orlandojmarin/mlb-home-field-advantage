@@ -320,148 +320,122 @@ with st.expander("Show caption and interpretation"):
 st.markdown("---")
 
 ###############################################
-    
-# FIGURE 4: SCATTER PLOTS
- 
-st.subheader("Correlation between Elevation or Attendance on Home Field Advantage")
- 
-# Calculate home and away win percentages
-df["home_win_pct"] = df["home_wins"] / (df["home_wins"] + df["home_losses"])
-df["away_win_pct"] = df["away_wins"] / (df["away_wins"] + df["away_losses"])
-df["home_advantage_score"] = df["home_win_pct"] - df["away_win_pct"]
- 
-# Create color column based on home_advantage_score (no lambda)
-colors = []
-for score in df["home_advantage_score"]:
-    if score > 0:
-        colors.append("green")
-    else:
-        colors.append("red")
-df["advantage_color"] = colors
- 
-# Dropdown: Elevation or Attendance
-factor = st.selectbox("Select a Factor:", ("Elevation", "Attendance"))
- 
-# Choose x-axis column and label
-if factor == "Elevation":
-    x_col = "elevation_ft"
-    x_label = "Ballpark Elevation (ft)"
-else:
-    x_col = "avg_attendance_home"
-    x_label = "Average Home Game Attendance"
- 
-y_col = "home_advantage_score"
-y_label = "Home Advantage Score"
- 
-fig = px.scatter(
-    df,
-    x=x_col,
-    y=y_col,
-    color="advantage_color",
-    hover_name="team_name",  # ✅ shows team name on hover
-    custom_data=[x_col, y_col],
-    labels={x_col: x_label, y_col: y_label},
-    title=f"{factor} vs Home Field Advantage",
-    color_discrete_map={"green": "green", "red": "red"}
-)
- 
-fig.update_traces(
-    marker=dict(size=10),
-    hovertemplate=
-        "<b>%{hovertext}</b><br>" +  # ✅ now using hovertext
-        f"{x_label}: %{{customdata[0]:,.0f}}<br>" +
-        f"{y_label}: %{{customdata[1]:.4f}}" +
-        "<extra></extra>"
-)
- 
-# Clean up layout
+
+# FIGURE 4: MILES TRAVELED SCATTER PLOT VISUALIZATION
+
+st.subheader("More Travel, More Trouble? Road Fatigue and Home Field Advantage")
+
+with st.expander("How to read this scatter plot"):
+    st.markdown("""
+    This scatter plot shows the relationship between the **total miles traveled** by each MLB team and their **home field advantage score** in 2022.
+
+    - **Higher up = stronger home field advantage**  
+    - **Farther right = more miles traveled**  
+    - Each point represents a team (abbreviation shown)  
+    - Hover over a point to view full team name, travel miles, and advantage score  
+    - A **trendline** has been added to show the overall direction of the relationship
+    """)
+
+import numpy as np
+
+# Prepare data
+x = df["miles_traveled"]
+y = df["home_field_advantage"]
+
+# Fit a linear regression model
+slope, intercept = np.polyfit(x, y, 1)
+line_x = np.linspace(x.min(), x.max(), 100)
+line_y = slope * line_x + intercept
+
+# Create the scatter plot
+fig = go.Figure()
+
+# Team data points
+fig.add_trace(go.Scatter(
+    x=x,
+    y=y,
+    mode="markers+text",
+    text=df["team_abv"],
+    hovertext=df["team_name"],
+    textposition="bottom center",
+    textfont=dict(size=14, color="black"),
+    cliponaxis=False,
+    marker=dict(
+        size=10,
+        color=y,
+        colorscale="Blues",
+        colorbar=dict(title="Home<br>Advantage"),
+        line=dict(width=1, color="black")
+    ),
+    hovertemplate=(
+        "<b>%{hovertext}</b><br>" +
+        "Miles Traveled: %{x:,.0f}<br>" +
+        "Home Field Advantage: %{y:.3f}<extra></extra>"
+    )
+))
+
+# Add trendline
+fig.add_trace(go.Scatter(
+    x=line_x,
+    y=line_y,
+    mode="lines",
+    line=dict(color="gray", dash="dash"),
+    name="Trendline",
+    hoverinfo="skip"
+))
+
+# Layout styling
 fig.update_layout(
-    xaxis_title=x_label,
-    yaxis_title=y_label,
-    title_x=0.5,
-    height=600,
-    showlegend=False  # hide green/red legend
+    title=dict(
+        text="Miles Traveled vs Home Field Advantage by Team",
+        x=0.5,
+        xanchor="center",
+        font=dict(size=22, color="black")
+    ),
+    height=650,
+    plot_bgcolor="white",
+    paper_bgcolor="#f5f5f5",
+    font=dict(color="black", size=14),
+    margin=dict(l=50, r=50, t=70, b=70),
+    showlegend=False,
+    xaxis=dict(
+        title="Total Miles Traveled in 2022",
+        title_font=dict(size=18, color="black"),
+        tickfont=dict(size=14, color="black")
+    ),
+    yaxis=dict(
+        title="Home Field Advantage Score",
+        title_font=dict(size=18, color="black"),
+        tickfont=dict(size=14, color="black")
+    )
 )
- 
-# Show the plot
+
 st.plotly_chart(fig, use_container_width=True)
- 
-# Caption to explain color
-st.caption("Green = positive home field advantage, Red = neutral or negative")
- 
-st.caption("""
-This visualization explores whether **elevation** or **attendance** affects a team's **home field advantage**.
-Hover over a point to see the team name and values.
-""")
- 
+
+with st.expander("Show caption and interpretation"):
+    st.markdown("""
+    This visualization explores whether **travel demands** contribute to home field advantage in Major League Baseball.
+
+    - Teams like the **Seattle Mariners** and **Oakland A's**, who travel long distances, also tend to have stronger home advantages.
+    - The **dashed trendline** shows a slight positive relationship between miles traveled and home field advantage — supporting the idea that **travel fatigue** may make away games harder.
+
+    While not the sole cause, travel appears to be one contributing factor to MLB’s home field advantage pattern.
+    """)
+
 st.markdown("---")
- 
+
 ###############################################
-
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# FIGURE 5: BUBBLE CHART
-
-# Calculate home run difference
-df["hr_diff"] = df["home_runs_home"] - df["home_runs_away"]
-
-# Create interactive bubble chart
-fig = px.scatter(
-    df,
-    x="max_wall_height_ft",
-    y="hr_diff",
-    size="avg_attendance_home",
-    hover_name="team_name",
-    color="hr_diff",
-    color_continuous_scale="RdYlGn",
-    labels={
-        "max_wall_height_ft": "Max Wall Height (ft)",
-        "hr_diff": "Home Run Difference (Home - Away)",
-        "avg_attendance_home": "Avg Home Attendance"
-    },
-    title="🏟️ Max Wall Height vs Home Run Difference"
-)
-
-# Customize hover template
-fig.update_traces(
-    hovertemplate="<b>%{hovertext}</b><br>" +
-                  "Max Wall Height: %{x} ft<br>" +
-                  "HR Difference: %{y}<br>" +
-                  "Avg Attendance: %{marker.size:,}<extra></extra>"
-)
-
-# Center and scale layout
-fig.update_layout(
-    title_x=0.5,
-    height=600,
-    xaxis=dict(tickformat=".0f"),
-    yaxis=dict(title="Home Runs (Home - Away)"),
-    coloraxis_colorbar=dict(title="HR Difference"),
-    showlegend=False
-)
-
-# Display in Streamlit
-st.subheader("🏟️ Max Wall Height vs Home Run Difference")
-st.markdown("**Each bubble represents a team. Size = Avg Home Attendance. Hover to view details.**")
-st.plotly_chart(fig, use_container_width=True)
-st.caption("Each bubble represents an MLB team. The x-axis shows the stadium's maximum wall height, while the y-axis shows the difference in home runs hit at home versus away. Bubble size reflects average home attendance. Hover to view team details.")
-
-# add a horizontal line to divide the section
-st.markdown("---") 
-
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# FIGURE 6: MAP VISUALIZATION WITH TABS (Captions Below Legend)
+# FIGURE 5: MAP VISUALIZATION WITH ENVIRONMENT AND PARK TABS
 
 # Ensure required calculations exist
 df["home_win_pct"] = df["home_wins"] / (df["home_wins"] + df["home_losses"])
 df["away_win_pct"] = df["away_wins"] / (df["away_wins"] + df["away_losses"])
 df["home_field_advantage_score"] = df["home_win_pct"] - df["away_win_pct"]
 df["attendance_rate"] = df["avg_attendance_home"] / df["seat_capacity"]
+
+# Normalize miles_traveled for marker sizing (shared across both tabs)
+max_miles = df["miles_traveled"].max()
+min_miles = df["miles_traveled"].min()
 
 # Create tabs for two different map views
 tab1, tab2 = st.tabs(["🌦️ Environmental Factors", "🏟️ Park Factors"])
@@ -470,18 +444,19 @@ tab1, tab2 = st.tabs(["🌦️ Environmental Factors", "🏟️ Park Factors"])
 with tab1:
     st.subheader("🌦️ Stadium Environment and Home Field Advantage")
 
-    st.markdown("**Marker color = Home Advantage Score (green = positive, red = neutral or negative)**")
+    st.markdown("**Marker color = Home Advantage Score (green = positive, red = neutral or negative)**  \n"
+                "**Marker size = Total Miles Traveled in 2022**")
 
     with st.expander("Show caption and interpretation"):
         st.markdown("""
         This map highlights each stadium's environmental conditions and their home field advantage in 2022.
 
-        - Green markers = stronger home performance  
-        - Red markers = equal or worse performance at home  
-        - Hover to explore average temperature, elevation, roof usage, and daytime game rates  
+        - **Green markers** = stronger home performance  
+        - **Red markers** = equal or worse performance at home  
+        - **Larger markers** = more miles traveled by the team in 2022  
+        - Hover to explore temperature, elevation, roof usage, day games, and travel distance  
         """)
 
-    # Create the map
     m_env = folium.Map(location=[39.8283, -98.5795], zoom_start=4, tiles="OpenStreetMap")
 
     for _, row in df.iterrows():
@@ -494,8 +469,10 @@ with tab1:
         elev = row["elevation_ft"]
         roof = row["roof_pct"]
         day = row["daytime_pct"]
+        miles = row["miles_traveled"]
 
         color = "green" if hfa > 0 else "red"
+        radius = 5 + 10 * ((miles - min_miles) / (max_miles - min_miles))  # scale 5–15
 
         tooltip = folium.Tooltip(
             f"<b>{team}</b><br>"
@@ -504,13 +481,19 @@ with tab1:
             f"Avg Temp: {temp:.1f}°F<br>"
             f"Elevation: {elev} ft<br>"
             f"Roof Usage: {roof:.0%}<br>"
-            f"Day Games: {day:.0%}",
+            f"Day Games: {day:.0%}<br>"
+            f"Miles Traveled: {miles:,.0f}",
             sticky=True
         )
 
-        folium.Marker(
+        folium.CircleMarker(
             location=[lat, lon],
-            icon=folium.Icon(color=color, icon="info-sign"),
+            radius=radius,
+            color="black",
+            weight=1,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.8,
             tooltip=tooltip
         ).add_to(m_env)
 
@@ -520,18 +503,18 @@ with tab1:
 with tab2:
     st.subheader("🏟️ Park Features and Home Field Advantage")
 
-    st.markdown("**Marker color = Home Advantage Score (green = positive, red = neutral or negative)**")
+    st.markdown("**Marker color = Home Advantage Score (green = positive, red = neutral or negative)**  \n"
+                "**Marker size = Total Miles Traveled in 2022**")
 
     with st.expander("Show caption and interpretation"):
         st.markdown("""
         This map focuses on physical ballpark features and crowd attendance.
 
-        - Hover to view stadium wall dimensions, average attendance, and fill rate  
-        - Teams with greener markers tended to win more at home in 2022  
-        - This map helps assess how park design and fan turnout may impact home field performance
+        - **Green markers** = stronger home performance  
+        - **Larger markers** = teams that traveled more miles  
+        - Hover to view stadium wall dimensions, attendance, fill rate, and miles traveled  
         """)
 
-    # Create the map
     m_park = folium.Map(location=[39.8283, -98.5795], zoom_start=4, tiles="OpenStreetMap")
 
     for _, row in df.iterrows():
@@ -544,8 +527,10 @@ with tab2:
         wall_min = row["min_wall_height_ft"]
         att = row["avg_attendance_home"]
         att_rate = row["attendance_rate"]
+        miles = row["miles_traveled"]
 
         color = "green" if hfa > 0 else "red"
+        radius = 5 + 10 * ((miles - min_miles) / (max_miles - min_miles))  # scale 5–15
 
         tooltip = folium.Tooltip(
             f"<b>{team}</b><br>"
@@ -554,13 +539,19 @@ with tab2:
             f"Max Wall Height: {wall_max} ft<br>"
             f"Min Wall Height: {wall_min} ft<br>"
             f"Avg Attendance: {att:,.0f}<br>"
-            f"Attendance Rate: {att_rate:.0%}",
+            f"Attendance Rate: {att_rate:.0%}<br>"
+            f"Miles Traveled: {miles:,.0f}",
             sticky=True
         )
 
-        folium.Marker(
+        folium.CircleMarker(
             location=[lat, lon],
-            icon=folium.Icon(color=color, icon="info-sign"),
+            radius=radius,
+            color="black",
+            weight=1,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.8,
             tooltip=tooltip
         ).add_to(m_park)
 
