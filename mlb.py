@@ -110,9 +110,9 @@ with st.expander("Show caption and interpretation"):
     st.markdown("""
     This visualization compares each MLB team's home and away win percentages using a scatter plot.
 
-    Out of 30 teams, 22 (73%) performed better at home (above the diagonal line), 3 (10%) performed the same (on the line), and only 5 (17%) performed better on the road (below the line).
+    Out of 30 teams, 22 (73%) performed better at home (above the diagonal line), 3 (10%) performed the same at home and on the road (on the line), and only 5 (17%) performed better on the road (below the line).
 
-    These results provide strong evidence of a league-wide home field advantage, with nearly three-quarters of MLB teams winning more frequently on their home turf than on the road.
+    These results provide strong evidence of a league-wide home field advantage, with nearly three-quarters of MLB teams winning more frequently at home than on the road.
     """)
 
 
@@ -129,7 +129,7 @@ st.subheader("MLB Totals Reveal Stronger Pitching and Slight Offensive Boost at 
  
 # Dropdown to select Batting or Pitching
 option = st.selectbox(
-    "Use the dropdown below to switch between batting and pitching metrics:",
+    "Use the dropdown below to switch between pitching and batting metrics:",
     ("Pitching", "Batting")
 )
  
@@ -221,13 +221,13 @@ elif option == "Pitching":
 
 with st.expander("Show caption and interpretation"):
     st.markdown("""
-    This visualization compares league-wide batting and pitching performance at home vs. away.  
+    This bar graph visualization compares league-wide batting and pitching performance at home vs. away.
 
-    Teams scored 1.46% more runs at home and hit 1.04% more home runs at home, suggesting a modest offensive boost at home ballparks.  
+    On the pitching side, teams recorded 8.63% more strikeouts at home, indicating stronger pitching effectiveness at home. Teams also issued 2.83% fewer walks at home, which is desirable, as fewer walks allowed reduces opponent scoring chances.  
 
-    On the pitching side, teams recorded 8.63% more strikeouts at home, indicating stronger pitching effectiveness on home turf. However, teams also issued 2.83% fewer walks at home, which is desirable, as fewer walks allowed reduces opponent scoring chances.  
+    Teams scored 1.46% more total runs at home and hit 1.04% more home runs at home, suggesting a modest offensive boost at home ballparks.  
 
-    Overall, these differences reflect a consistent home field advantage across both batting and pitching metrics.
+    Overall, these differences reflect a consistent home field advantage across both pitching and batting metrics.
     """)
  
 st.markdown("---")
@@ -240,16 +240,16 @@ st.subheader("Pitching Fuels MLB Home Field Advantage More Than Hitting")
 
 # Dropdown for metric selection
 metric = st.selectbox(
-    "Use the dropdown below to switch between runs, home runs, strikeouts, and walks:",
-    ("Runs", "Home Runs", "Strikeouts", "Walks")
+    "Use the dropdown below to switch between strikeouts, walks, runs, and home runs:",
+    ("Strikeouts", "Walks", "Runs", "Home Runs")
 )
 
-# Map user-friendly labels to actual column names in the dataset
+# Map user-friendly labels to column names in the dataset
 metric_columns = {
-    "Runs": ("runs_scored_home", "runs_scored_away"),
-    "Home Runs": ("home_runs_home", "home_runs_away"),
     "Strikeouts": ("strikeouts_home", "strikeouts_away"),
-    "Walks": ("walks_home", "walks_away")
+    "Walks": ("walks_home", "walks_away"),
+    "Runs": ("runs_scored_home", "runs_scored_away"),
+    "Home Runs": ("home_runs_home", "home_runs_away")
 }
 
 home_col, away_col = metric_columns[metric]
@@ -308,13 +308,13 @@ st.plotly_chart(fig, use_container_width=True)
 
 with st.expander("Show caption and interpretation"):
     st.markdown("""
-    This visualization shows the distribution of team-level performance metrics at home vs. away using box plots.
+    This box plot visualization shows the distribution of team-level performance metrics at home vs. away.
 
-    Median values show that teams scored slightly fewer runs at home (343) than away (352), and hit a nearly identical number of home runs at home (86) and away (87.5). This slight dip in home offense may be partially explained by the fact that home teams often do not bat in the 9th inning if they are already winning.
+    Median values show that teams hit a nearly identical number of runs at home (343) and away (352), and hit a nearly identical number of home runs at home (86) and away (87.5). These offensive numbers may be partially explained by the fact that home teams do not bat in the 9th inning if they are already winning.
 
-    On the pitching side, teams recorded more strikeouts at home (719) than away (658.5), and issued slightly fewer walks at home (241.5) than away (255). This is especially notable since home teams may pitch fewer total innings, yet still outperform away teams in key pitching metrics.
+    On the pitching side, teams recorded more strikeouts at home (719) than away (658.5), and issued slightly fewer walks at home (241.5) than away (255). This is especially notable since home teams may pitch more total innings, yet still have fewer walks at home than on the road.
 
-    These patterns suggest that home field advantage in baseball is most evident on the pitching side, where home teams demonstrate more effective control and dominance on the mound, even with fewer opportunities.
+    These patterns suggest that home field advantage in baseball is most evident on the pitching side, where home teams demonstrate more effective control and dominance on the mound.
     """)
 
 st.markdown("---")
@@ -414,10 +414,10 @@ st.plotly_chart(fig, use_container_width=True)
 
 with st.expander("Show caption and interpretation"):
     st.markdown("""
-    This visualization explores whether **travel demands** contribute to home field advantage in Major League Baseball.
+    This scatter plot visualization explores whether travel demands contribute to home field advantage in Major League Baseball.
 
-    - Teams like the **Seattle Mariners** and **Oakland A's**, who travel long distances, also tend to have stronger home advantages.
-    - The **dashed trendline** shows a slight positive relationship between miles traveled and home field advantage — supporting the idea that **travel fatigue** may make away games harder.
+    - Teams that traveled more than 35,000 miles during the 2022 season averaged a home field advantage score of 0.026, compared to 0.084 for those under 35k — a 223% difference.
+    - The dashed trendline shows a slight negative relationship between miles traveled and home field advantage — supporting the idea that excessive travel may negatively impact performance.
 
     While not the sole cause, travel appears to be one contributing factor to MLB’s home field advantage pattern.
     """)
