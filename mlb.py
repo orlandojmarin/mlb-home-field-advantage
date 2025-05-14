@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
@@ -121,9 +122,6 @@ st.markdown("---")
 ###############################################
 
 # FIGURE 2: DOUBLE BAR GRAPHS
-### add a subheader to title the first figure
-### move the sentence that's currently above figure 1 below it so it serves as the "caption"
-### move legend to top left corner for the PITCHING view
  
 st.subheader("MLB Totals Reveal Stronger Pitching and Slight Offensive Boost at Home")
  
@@ -153,7 +151,7 @@ if option == "Batting":
     x_home = [pos - width/2 for pos in x]  # Home bars shifted left
     x_away = [pos + width/2 for pos in x]  # Away bars shifted right
 
-    # Plot the bars with custom colors
+    # Plot the bars with custom mlb colors
     fig, ax = plt.subplots(figsize=(10, 8))
     bars_home = ax.bar(x_home, home_totals, width, label="Home", color="#002D72", edgecolor="black")
     bars_away = ax.bar(x_away, away_totals, width, label="Away", color="#d9d9d9", edgecolor="black")
@@ -196,7 +194,7 @@ elif option == "Pitching":
     x_home = [pos - width/2 for pos in x]  # Home bars shifted left
     x_away = [pos + width/2 for pos in x]  # Away bars shifted right
 
-    # Plot the bars with custom colors
+    # Plot the bars with custom mlb colors
     fig, ax = plt.subplots(figsize=(10, 8))
     bars_home = ax.bar(x_home, home_totals, width, label="Home", color="#002D72", edgecolor="black")
     bars_away = ax.bar(x_away, away_totals, width, label="Away", color="#d9d9d9", edgecolor="black")
@@ -310,9 +308,9 @@ with st.expander("Show caption and interpretation"):
     st.markdown("""
     This box plot visualization shows the distribution of team-level performance metrics at home vs. away.
 
-    Median values show that teams hit a nearly identical number of runs at home (343) and away (352), and hit a nearly identical number of home runs at home (86) and away (87.5). These offensive numbers may be partially explained by the fact that home teams do not bat in the 9th inning if they are already winning.
-
     On the pitching side, teams recorded more strikeouts at home (719) than away (658.5), and issued slightly fewer walks at home (241.5) than away (255). This is especially notable since home teams may pitch more total innings, yet still have fewer walks at home than on the road.
+
+    Median values show that teams hit a nearly identical number of runs at home (343) and away (352), and hit a nearly identical number of home runs at home (86) and away (87.5). These offensive numbers may be partially explained by the fact that home teams do not bat in the 9th inning if they are already winning.
 
     These patterns suggest that home field advantage in baseball is most evident on the pitching side, where home teams demonstrate more effective control and dominance on the mound.
     """)
@@ -335,8 +333,6 @@ with st.expander("How to read this scatter plot"):
     - Hover over a point to view full team name, travel miles, and advantage score  
     - A **trendline** has been added to show the overall direction of the relationship
     """)
-
-import numpy as np
 
 # Prepare data
 x = df["miles_traveled"]
@@ -425,6 +421,7 @@ with st.expander("Show caption and interpretation"):
 st.markdown("---")
 
 ###############################################
+
 # FIGURE 5: MAP VISUALIZATION WITH ENVIRONMENT AND PARK TABS
 
 # Ensure required calculations exist
